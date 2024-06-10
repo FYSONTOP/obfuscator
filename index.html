@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced HTML Obfuscator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        textarea { width: 100%; height: 200px; }
+        pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Advanced HTML Obfuscator</h1>
+    <p>Enter your HTML code below:</p>
+    <textarea id="htmlInput"></textarea>
+    <button onclick="obfuscateHTML()">Obfuscate</button>
+    <h2>Obfuscated HTML:</h2>
+    <pre id="obfuscatedOutput"></pre>
+
+    <script>
+        function obfuscateHTML() {
+            const htmlInput = document.getElementById('htmlInput').value;
+            let obfuscatedHTML = '';
+            for (let i = 0; i < htmlInput.length; i++) {
+                if (Math.random() > 0.5) {
+                    obfuscatedHTML += '&#' + htmlInput.charCodeAt(i) + ';';
+                } else {
+                    obfuscatedHTML += '\\x' + htmlInput.charCodeAt(i).toString(16);
+                }
+            }
+
+            const parts = [];
+            for (let i = 0; i < obfuscatedHTML.length; i += 10) {
+                parts.push(obfuscatedHTML.substring(i, i + 10));
+            }
+
+            const obfuscatedScript = `
+                (function(){
+                    var parts = ${JSON.stringify(parts)};
+                    var code = parts.join('');
+                    document.write(decodeHtml(code));
+
+                    function decodeHtml(html) {
+                        var txt = document.createElement('textarea');
+                        txt.innerHTML = html.replace(/\\\\x([0-9A-Fa-f]{2})/g, function(_, hex) {
+                            return String.fromCharCode(parseInt(hex, 16));
+                        });
+                        return txt.value;
+                    }
+                })();
+            `;
+
+            const base64ObfuscatedScript = btoa(obfuscatedScript);
+            const output = `<script>eval(atob('${base64ObfuscatedScript}'))<\/script>`;
+            document.getElementById('obfuscatedOutput').textContent = output;
+        }
+    </script>
+</body>
+</html>
